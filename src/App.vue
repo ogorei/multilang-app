@@ -1,28 +1,66 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div class="container">
+  <Header/>
+    <div v-if="!loading">
+    </div>
+    <div v-else>
+      <p class="d-flex font-bold justify-center text-gray-600">Fetching Data</p>
+    </div>
+    <SwitchLang />
+    <Country @get-country="getCountryData" :countries="countries" />
+ 
+
+    <DataBox :stats="stats"/>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import Header from './components/Header.vue';
+import DataBox from './components/DataBox.vue';
+import Country from './components/Country.vue';
+import SwitchLang from './components/SwitchLang.vue';
+
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
-  }
-}
-</script>
+    Header,
+    DataBox,
+    Country,
+    SwitchLang
+    
+  },
+  data(){
+    return{
+      lang:'ja',
+      loading: true,
+      title:'Global',
+      countries: [],
+      stats: {},
+      date: '',
+    }
+  },
+  methods:{
+    async fetchCovidData(){
+      const response = await fetch('https://api.covid19api.com/summary');
+      const data = response.json();
+      return data;
+    },
+    getCountryData(country){
+      this.stats = country;
+      this.title = country.Country;
+    },
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
+  },
+  async created(){
+    const caseData = await this.fetchCovidData();
+    this.date = caseData.Date;
+    this.countries = caseData.Countries
+    this.stats = caseData.Global
+    this.loading = false
+  },
+
+
+  }
+
+</script>
